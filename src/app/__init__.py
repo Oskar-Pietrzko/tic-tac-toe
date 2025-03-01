@@ -1,33 +1,32 @@
-from app.objects.board import print_board, get_empty_board, handle_move, is_win, is_playable
-from app.objects.player import handle_player_interaction, change_player
-
-import os
+from app.difficulty import Difficulty
+from app.player_handler import PlayerHandler
+from app.ai_player import AIPlayer
+from app.player import Player
+from app.board import Board
 
 
 def main() -> None:
-    running: bool = True
-    board_size: int = 3
-    board: list[list[str]] = get_empty_board(board_size)
-    player: str = "X"
+    board: Board = Board()
 
-    while running:
-        os.system("cls")
+    player1: Player = Player("X", board)
+    player2: Player = Player("O", board)
+    player_handler: PlayerHandler = PlayerHandler(player1, player2)
 
-        print_board(board)
+    while True:
+        player: Player = player_handler.next_player()
 
-        move: tuple[int, int] = handle_player_interaction(player)
-        board = handle_move(move[0], move[1], board, player)
+        board.display()
+        move: tuple[int, ...] = player.input_move()
+        board.move(move, player)
 
-        if is_win(board, player):
-            running = False
+        if board.is_resolved():
+            break
 
-            os.system("cls")
-            print_board(board)
-            print(f"Player {player} won!")
-        elif not is_playable(board):
-            running = False
-            os.system("cls")
-            print_board(board)
-            print("Draw!")
-        else:
-            player = change_player(player)
+    board.display()
+
+    if board.has_winner():
+        winner: str = board.get_winner()
+
+        print(f"Player {winner} wins!")
+    else:
+        print("Draft!")
